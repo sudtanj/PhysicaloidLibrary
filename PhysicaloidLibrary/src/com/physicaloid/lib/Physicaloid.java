@@ -17,6 +17,7 @@
 package com.physicaloid.lib;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.physicaloid.BuildConfig;
@@ -29,6 +30,7 @@ import com.physicaloid.lib.usb.driver.uart.UartConfig;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 public class Physicaloid {
@@ -176,6 +178,124 @@ public class Physicaloid {
         }
     }
 
+    public int write(String str) throws RuntimeException{
+    	String sendStr=changeEscapeSequence(str, null);
+    	return write(sendStr.getBytes(),sendStr.length());
+    }
+    
+    public int write(String str,String linefeedCode) throws RuntimeException{
+    	String sendStr=changeEscapeSequence(str, linefeedCode);
+    	return write(sendStr.getBytes(),sendStr.length());
+    }
+    
+    /**
+     * 加入成贞符号
+     * @param in
+     * @param linefeedCode
+     * @return
+     */
+    private String changeEscapeSequence(String in,String linefeedCode) {
+        String out = new String();
+        try {
+            out = unescapeJava(in);
+        } catch (IOException e) {
+            return "";
+        }
+        if(!TextUtils.isEmpty(linefeedCode))out = out + linefeedCode;
+        return out;
+    }
+    
+    /**
+     * 转码
+     * @param str
+     * @return
+     * @throws IOException
+     */
+    private String unescapeJava(String str) throws IOException {
+        if (str == null) {
+            return "";
+        }
+        int sz = str.length();
+        StringBuffer unicode = new StringBuffer(4);
+
+        StringBuilder strout = new StringBuilder();
+        boolean hadSlash = false;
+        boolean inUnicode = false;
+        for (int i = 0; i < sz; i++) {
+            char ch = str.charAt(i);
+            if (inUnicode) {
+                // if in unicode, then we're reading unicode
+                // values in somehow
+                unicode.append(ch);
+                if (unicode.length() == 4) {
+                    // unicode now contains the four hex digits
+                    // which represents our unicode character
+                    try {
+                        int value = Integer.parseInt(unicode.toString(), 16);
+                        strout.append((char) value);
+                        unicode.setLength(0);
+                        inUnicode = false;
+                        hadSlash = false;
+                    } catch (NumberFormatException nfe) {
+                        // throw new NestableRuntimeException("Unable to parse unicode value: " + unicode, nfe);
+                        throw new IOException("Unable to parse unicode value: " + unicode, nfe);
+                    }
+                }
+                continue;
+            }
+            if (hadSlash) {
+                // handle an escaped value
+                hadSlash = false;
+                switch (ch) {
+                    case '\\':
+                        strout.append('\\');
+                        break;
+                    case '\'':
+                        strout.append('\'');
+                        break;
+                    case '\"':
+                        strout.append('"');
+                        break;
+                    case 'r':
+                        strout.append('\r');
+                        break;
+                    case 'f':
+                        strout.append('\f');
+                        break;
+                    case 't':
+                        strout.append('\t');
+                        break;
+                    case 'n':
+                        strout.append('\n');
+                        break;
+                    case 'b':
+                        strout.append('\b');
+                        break;
+                    case 'u':
+                        {
+                            // uh-oh, we're in unicode country....
+                            inUnicode = true;
+                            break;
+                        }
+                    default :
+                        strout.append(ch);
+                        break;
+                }
+                continue;
+            } else if (ch == '\\') {
+                hadSlash = true;
+                continue;
+            }
+            strout.append(ch);
+        }
+        if (hadSlash) {
+            // then we're in the weird case of a \ at the end of the
+            // string, let's output it anyway.
+            strout.append('\\');
+        }
+        return new String(strout.toString());
+    }
+    
     /**
      * Uploads a binary file to a device on background process. No need to open().
      * @param board board profile e.g. Boards.ARDUINO_UNO

@@ -37,6 +37,7 @@ public class UartConfig {
     public int dataBits;
     public int stopBits;
     public int parity;
+    public int flowControl;
     public boolean rtsOn;
     public boolean dtrOn;
 
@@ -45,6 +46,7 @@ public class UartConfig {
         this.dataBits       = DATA_BITS8;
         this.stopBits       = STOP_BITS1;
         this.parity         = PARITY_NONE;
+        this.flowControl    = FLOW_CONTROL_OFF;
         this.dtrOn          = false;
         this.rtsOn          = false;
     }
@@ -57,4 +59,7 @@ public class UartConfig {
         this.dtrOn          = dtrOn;
         this.rtsOn          = rtsOn;
     }
+    
+    
+    
 }

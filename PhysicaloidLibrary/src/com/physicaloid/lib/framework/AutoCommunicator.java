@@ -21,6 +21,7 @@ import android.hardware.usb.UsbDevice;
 
 import com.physicaloid.lib.UsbVidList;
 import com.physicaloid.lib.usb.UsbAccessor;
+import com.physicaloid.lib.usb.driver.uart.UartCH340;
 import com.physicaloid.lib.usb.driver.uart.UartCdcAcm;
 import com.physicaloid.lib.usb.driver.uart.UartCp210x;
 import com.physicaloid.lib.usb.driver.uart.UartFtdi;
@@ -44,6 +45,8 @@ public class AutoCommunicator {
                         return new UartFtdi(context);
                     } else if(vid == UsbVidList.CP210X.getVid()) {
                         return new UartCp210x(context);
+                    }else if(vid == UsbVidList.DCCDUINO.getVid()){
+                    	return new UartCH340(context);
                     }
                 }
             }
