@@ -97,7 +97,7 @@ public class CH340AndroidDriver {
 					this.mDeviceConnection = ((UsbDeviceConnection)localObject);
 					this.mInterface = intf;
 					if(!enumerateEndPoint(intf))return false;
-					Toast.makeText(mContext, "Device Has Attached to Android", Toast.LENGTH_LONG).show();
+					//Toast.makeText(mContext, "Device Has Attached to Android", Toast.LENGTH_LONG).show();
 					if(READ_ENABLE == false){
 						READ_ENABLE = true;
 						readThread = new read_thread(mBulkInPoint, mDeviceConnection);
