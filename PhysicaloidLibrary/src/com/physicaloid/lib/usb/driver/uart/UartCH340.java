@@ -33,7 +33,7 @@ public class UartCH340 extends SerialCommunicator {
     private RingBuffer mBuffer;
 
     private UsbDeviceConnection mConnection;
-    private int mInterfaceNum;
+    private int mInterfaceNum=0;
     private boolean isOpened;
 
     //----
